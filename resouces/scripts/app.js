@@ -270,6 +270,32 @@ const displayColor = (game) => {
     }
 }
 
+const onEnterButtonPressed = (game) => {
+    document.querySelector('.action.enter')
+            .addEventListener('click', () => onKeyPressed('Enter', game))
+}
+
+const onEraseButtonPressed = (game) => {
+    document.querySelector('.action.erase')
+            .addEventListener('click', (event) => {
+                event.stopPropagation()
+                onKeyPressed('Backspace', game)
+            })
+}
+
+const onLetterButtonPressed = (game) => {
+    document.querySelectorAll('.letra').forEach((element) => {
+        element.addEventListener('click', (event) => {
+            onKeyPressed(event.target.value, game)
+            element.blur()
+        })
+    })
+}
+
+const onKeydown = (game) => {
+    document.addEventListener('keydown', (event) => onKeyPressed(event.key, game))
+}
+
 const start = () => {
     if (isTestEnviroment()) {
         module.exports = {
@@ -306,7 +332,10 @@ const start = () => {
         console.log(database)
         console.log('get one random word: ', rightGuess)
 
-        document.addEventListener('keydown', (event) => onKeyPressed(event.key, game))
+        onKeydown(game)
+        onLetterButtonPressed(game)
+        onEnterButtonPressed(game)
+        onEraseButtonPressed(game)
     }
 }
 
