@@ -9,6 +9,10 @@ const KEY = {
     DELETE: 'Delete'
 }
 
+const GRAY_COLOR_HEXADECIMAL = '#585858'
+const YELLOW_COLOR_HEXADECIMAL = '#B59F3B'
+const GREEN_COLOR_HEXADECIMAL = '#538D4E'
+
 const NOTIFICATION = {
     DISPLAY_LETTER_SUCCESSFULLY: 'Showing letter with success',
     BACKSPACE_KEY_PRESSED: 'Backspace key pressed',
@@ -19,7 +23,9 @@ const NOTIFICATION = {
     INVALID_PRESSED_KEY: 'Invalid Pressed Key',
     REACH_MAX_ATTEMPTS: 'Reach Max Attempts',
     REACH_MAX_LETTERS_PER_ROW: 'Reach Max letter per row',
-    WORD_NOT_IN_DATABASE: 'Word not in database'
+    WORD_NOT_IN_DATABASE: 'Word not in database',
+    GAME_OVER_GUESS_RIGHT: 'Parabéns! Você acertou a palavra'
+
 }
 
 const gameInitialConfig = {
@@ -107,7 +113,7 @@ const nextGuess = (game) => {
 }
 
 const checkGuess = (game) => {
-    const { database, currentLetterPosition, currentGuess } = game
+    const { database, currentLetterPosition, currentGuess, rightGuess } = game
 
     if (isCurrentGuessEmpty(currentGuess)) {
         return NOTIFICATION.EMPTY_GUESS
@@ -120,6 +126,14 @@ const checkGuess = (game) => {
     if (!isGuessInDatabase(currentGuess, database)) {
         return NOTIFICATION.WORD_NOT_IN_DATABASE
     }
+
+    if (isCorrectGuess(currentGuess, rightGuess)) {
+        displayColor(game)
+        setTimeout(() => alert(NOTIFICATION.GAME_OVER_GUESS_RIGHT), 250)
+        return NOTIFICATION.GAME_OVER_GUESS_RIGHT
+    }
+
+    displayColor(game)
 
     return nextGuess(game)
 }
@@ -173,19 +187,65 @@ const loadWords = async () => {
                     .catch(() => [])
 }
 
+//Dia 4
+
+const isCorrectGuess = (currentGuess, rightGuess) => {
+    return rightGuess === currentGuess
+}
+
+const isLetterInRightGuess = (letter, rightGuess) => {
+    const letterPosition = rightGuess.indexOf(letter)
+    return letterPosition > -1
+}
+
+const isLettersEqualsInSamePosition = (position, currentGuess, rightGuess) => {
+    return currentGuess[position] === rightGuess[position]
+}
+
+const applyColor = (element, color) => {
+    element.style.backgroundColor = color
+}
+
+const displayColor = (game) => {
+    const { currentGuess, currentRow, rightGuess } = game
+
+    const row = document.querySelector(`.linha-${currentRow}`)
+
+    for (let position = 0; position < currentGuess.length; position++) {
+        const box = row.querySelector(`.letra-${position+1}`)
+        const letter = currentGuess[position]
+
+        if (!isLetterInRightGuess(letter, rightGuess)) {
+            applyColor(box, GRAY_COLOR_HEXADECIMAL)
+            continue
+        }
+
+        if (isLettersEqualsInSamePosition(position, currentGuess, rightGuess)) {
+            applyColor(box, GREEN_COLOR_HEXADECIMAL)
+            continue
+        }
+
+        applyColor(box, YELLOW_COLOR_HEXADECIMAL)
+    }
+}
+
 const start = () => {
     if (isTestEnviroment()) {
         module.exports = {
             checkGuess,
             nextGuess,
+            displayColor,
             displayLetterOnTheBoard,
             removeLetterFromBoard,
             removeLastLetter,
             getOneRandomWord,
             isBackspaceKeyPressed,
+            isCorrectGuess,
             isCurrentGuessEmpty,
             isGuessInDatabase,
             isEnterKeyPressed,
+            isLettersEqualsInSamePosition,
+            isLetterInRightGuess,
             isValidKeyPressed,
             isTestEnviroment,
             loadWords,
@@ -199,10 +259,11 @@ const start = () => {
 
     window.onload = async () => {
         const database = await loadWords()
+        const rightGuess = getOneRandomWord(database)
 
-        const game = { ...gameInitialConfig, database }
+        const game = { ...gameInitialConfig, database, rightGuess }
         console.log(database)
-        console.log('get one random word: ', getOneRandomWord(database))
+        console.log('get one random word: ', rightGuess)
 
         document.addEventListener('keydown', (event) => onKeyPressed(event.key, game))
     }
