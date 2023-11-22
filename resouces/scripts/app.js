@@ -27,6 +27,9 @@ const NOTIFICATION = {
     GAME_OVER_GUESS_RIGHT: 'Parabéns! Você acertou a palavra'
 
 }
+const TOASTIFY_SUCCESS_COLOR = '#538D4E'
+const TOASTIFY_ERROR_COLOR = '#BA4747'
+const TOASTIFY_WARNING_COLOR = '#B59F3B'
 
 const gameInitialConfig = {
     database: [],
@@ -36,7 +39,34 @@ const gameInitialConfig = {
     rightGuess: ''
 }
 
+const toastifyDefaultConfig = {
+    duration: 3000,
+    newWindow: true,
+    close: true,
+    gravity: "top",
+    position: "center",
+    stopOnFocus: true,
+    style: {
+      boxShadow: "1px 3px 10px 0px #585858"
+    }
+}
 
+let isNotificationVisible = false;
+
+const hideNotification = () => {
+  isNotificationVisible = false;
+};
+
+const showNotification = ({ backgroundColor, message }) => {
+  if (isNotificationVisible) {
+    return; 
+  }
+
+  isNotificationVisible = true;
+  Toastify({ ...toastifyDefaultConfig, text: message, backgroundColor }).showToast();
+
+  setTimeout(hideNotification, 2000);
+};
 
 const getGameBoardLetter = (currentRow, currentLetterPosition) => {
     return document.querySelector(`.jogo .linha-${currentRow} .letra-${currentLetterPosition}`)
@@ -116,37 +146,39 @@ const checkGuess = (game) => {
     const { database, currentLetterPosition, currentGuess, rightGuess } = game
 
     if (isCurrentGuessEmpty(currentGuess)) {
-        return NOTIFICATION.EMPTY_GUESS
+        return showNotification({ message: NOTIFICATION.EMPTY_GUESS, backgroundColor: TOASTIFY_ERROR_COLOR })
     }
 
     if (!reachMaxLetterPerRow(currentLetterPosition)) {
-        return NOTIFICATION.INCOMPLETE_GUESS
+        return showNotification({ message: NOTIFICATION.INCOMPLETE_GUESS, backgroundColor: TOASTIFY_WARNING_COLOR })
     }
 
     if (!isGuessInDatabase(currentGuess, database)) {
-        return NOTIFICATION.WORD_NOT_IN_DATABASE
+        return showNotification({ message: NOTIFICATION.WORD_NOT_IN_DATABASE, backgroundColor: TOASTIFY_WARNING_COLOR })
     }
 
     if (isCorrectGuess(currentGuess, rightGuess)) {
-        displayColor(game)
-        setTimeout(() => alert(NOTIFICATION.GAME_OVER_GUESS_RIGHT), 250)
-        return NOTIFICATION.GAME_OVER_GUESS_RIGHT
+        displayColor(game);
+        showNotification({ message: NOTIFICATION.GAME_OVER_GUESS_RIGHT, backgroundColor: TOASTIFY_SUCCESS_COLOR });
+        wordGuessed = true; // Define que a palavra foi corretamente adivinhada
+        return;
     }
+      
 
     displayColor(game)
 
     return nextGuess(game)
 }
-
+let wordGuessed = false;
 const onKeyPressed = (pressedKey, game) => {
     const { currentLetterPosition, currentGuess, currentRow } = game
 
     if (reachMaxAttempts(currentRow)) {
-        return NOTIFICATION.REACH_MAX_ATTEMPTS
+        return showNotification({ message: NOTIFICATION.REACH_MAX_ATTEMPTS, backgroundColor: TOASTIFY_ERROR_COLOR })
     }
 
     if (!isValidKeyPressed(pressedKey)) {
-        return NOTIFICATION.INVALID_PRESSED_KEY
+        return showNotification({ message: NOTIFICATION.INVALID_PRESSED_KEY, backgroundColor: TOASTIFY_ERROR_COLOR })
     }
 
     if (isBackspaceKeyPressed(pressedKey) && !isCurrentGuessEmpty(currentGuess)) {
@@ -154,7 +186,7 @@ const onKeyPressed = (pressedKey, game) => {
     }
 
     if (isBackspaceKeyPressed(pressedKey) && isCurrentGuessEmpty(currentGuess)) {
-        return NOTIFICATION.BACKSPACE_WHEN_EMPTY_GUESS
+        return showNotification({ message: NOTIFICATION.BACKSPACE_WHEN_EMPTY_GUESS, backgroundColor: TOASTIFY_WARNING_COLOR })
     }
 
     if (isEnterKeyPressed(pressedKey)) {
@@ -162,7 +194,16 @@ const onKeyPressed = (pressedKey, game) => {
     }
 
     if (reachMaxLetterPerRow(currentLetterPosition)) {
-        return NOTIFICATION.REACH_MAX_LETTERS_PER_ROW
+        return showNotification({ message: NOTIFICATION.REACH_MAX_LETTERS_PER_ROW, backgroundColor: TOASTIFY_ERROR_COLOR })
+    }
+    if (wordGuessed) {
+        if (isBackspaceKeyPressed(pressedKey) && !isCurrentGuessEmpty(currentGuess)) {
+            return showNotification({ message: NOTIFICATION.GAME_OVER_GUESS_RIGHT, backgroundColor: TOASTIFY_SUCCESS_COLOR });
+        }
+        return;
+    }
+    if (isBackspaceKeyPressed(pressedKey) && !isCurrentGuessEmpty(currentGuess)) {
+        return removeLetterFromBoard(game);
     }
 
     return displayLetterOnTheBoard(game, pressedKey)
