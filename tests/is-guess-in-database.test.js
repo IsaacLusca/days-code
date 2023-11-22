@@ -1,35 +1,18 @@
 const app = require('../resouces/scripts/app')
 
+const wordList = ["agent", "aging", "agree", "ahead", "aides", "aimed", "agile", "alarm", "alert", "bikes", "blade", "candy", "house", "sorry", "worry"]
+
 describe('Testing case guess is in database', () => {
-    const wordList = ["agent",
-                      "aging",
-                      "agree",
-                      "ahead",
-                      "aides",
-                      "aimed",
-                      "agile",
-                      "alarm",
-                      "alert",
-                      "bikes",
-                      "blade",
-                      "candy",
-                      "house",
-                      "sorry",
-                      "worry"]
+    const testCases = [
+        {guess: 'allow', expected: false},
+        {guess: 'agile', expected: true},
+        {guess: 'worry', expected: true},
+        {guess: 'agent', expected: true}
+    ]
 
-     test('should return false because allow is not in list', () => {
-        expect(app.isGuessInDatabase('allow', wordList)).toBe(false)
-    })
-
-    test('should return true because agile is in list', () => {
-        expect(app.isGuessInDatabase('agile', wordList)).toBe(true)
-    })
-
-    test('should return true because worry is in list', () => {
-        expect(app.isGuessInDatabase('worry', wordList)).toBe(true)
-    })
-
-    test('should return true because agent is in list', () => {
-        expect(app.isGuessInDatabase('agent', wordList)).toBe(true)
+    testCases.forEach(({guess, expected}) => {
+        test(`should return ${expected} because ${guess} is ${expected ? '' : 'not '}in list`, () => {
+            expect(app.isGuessInDatabase(guess, wordList)).toBe(expected)
+        })
     })
 })
