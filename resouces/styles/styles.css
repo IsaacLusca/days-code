@@ -90,3 +90,26 @@ header img{
 .tecla-linha button:hover{
     filter: brightness(0.8);
 }
+
+.botao-jogar{
+    text-decoration: none;
+    background-color: yellow;
+    width: 200px;
+    height: 30px;
+    font-size: 17px;
+    border: none;
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.jogar-novamente{
+    position: absolute;
+    justify-content: center;
+    margin-top: 20px;
+    display: none;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.botao-jogar:hover{
+    background-color: rgb(31, 189, 0);
+}

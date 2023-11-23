@@ -160,7 +160,7 @@ const checkGuess = (game) => {
     if (isCorrectGuess(currentGuess, rightGuess)) {
         displayColor(game);
         showNotification({ message: NOTIFICATION.GAME_OVER_GUESS_RIGHT, backgroundColor: TOASTIFY_SUCCESS_COLOR });
-        wordGuessed = true; // Define que a palavra foi corretamente adivinhada
+        document.querySelector('.jogar-novamente').style.display = 'block';
         return;
     }
       
@@ -336,6 +336,10 @@ const start = () => {
         onLetterButtonPressed(game)
         onEnterButtonPressed(game)
         onEraseButtonPressed(game)
+
+        document.getElementById('botao-jogar-again').addEventListener('click', () => {
+            location.reload();
+        });
     }
 }
 
